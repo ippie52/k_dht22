@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <string.h>
 #include <unistd.h>
+#include <sched.h>
 
 #include "locking.h"
 
@@ -37,18 +38,20 @@ typedef enum Results
     RESULT_INVALID,     /* Data appears to be invalid               */
 } SensorReadingResults;
 
-// -----------------------------------------------------------------------------
-// Sensor value struct, storing temperature, humidity and the processing result
-// -----------------------------------------------------------------------------
+/*******************************************************************************
+ *  \brief  Sensor value struct, storing temperature, humidity and the
+ *          processing result
+ */
 typedef struct Values
 {
-    SensorReadingResults result;
-    float humidity;
-    float temperature;
+    SensorReadingResults result;    ///< The sensor reading results
+    float humidity;                 ///< The humidity reading (in %)
+    float temperature;              ///< The temperature reading (in *C)
 
 } SensorValues;
 
-#define INVALID_VALUES { RESULT_INVALID, 0.0f, 0.0f }
+#define INVALID_VALUES  { RESULT_INVALID, 0.0f, 0.0f }
+#define C_TO_F(c)       (((float)c * 1.8f) + 32.0f)
 
 /*******************************************************************************
  *  \brief  Evaluates the sensor values to sanity check the results found.
@@ -238,6 +241,18 @@ static int set_last_values
 }
 
 /*******************************************************************************
+ *  \brief  Sets the thread priority to the maximum available in the hope that
+ *          it will prevent data loss when bit-bashing the DHT sensor.
+ */
+static void set_priority()
+{
+    struct sched_param params = { sched_get_priority_max(SCHED_FIFO) };
+    // PID set to zero implies this thread, FIFO is the best chance at having a
+    // "real-time" priority, and the maximum priority is identified.
+    sched_setscheduler(0, SCHED_FIFO, &params);
+}
+
+/*******************************************************************************
  *  \brief  Reads the DHT22 value and returns the result of the read.
  *  \return The SensorReadingResults value.
  */
@@ -256,13 +271,12 @@ static SensorReadingResults read_dht22_data
     static SensorValues last_read = INVALID_VALUES;
 
     memset(dht22_data, 0, sizeof(dht22_data));
-
     // Pull pin down for 18 milliseconds
     pinMode(sensor_pin, OUTPUT);
     digitalWrite(sensor_pin, HIGH);
-    delay(10);
+    delayMicroseconds(10000);
     digitalWrite(sensor_pin, LOW);
-    delay(18);
+    delayMicroseconds(18000);
     // Then pull it up for 40 microseconds
     digitalWrite(sensor_pin, HIGH);
     delayMicroseconds(40);
@@ -310,7 +324,6 @@ static SensorReadingResults read_dht22_data
         values->humidity /= 10;
         values->temperature = (float)(dht22_data[2] & 0x7F)* 256 + (float)dht22_data[3];
         values->temperature /= 10.0;
-
         if ((dht22_data[2] & 0x80) != 0)
         {
           values->temperature *= -1.0;
@@ -345,19 +358,19 @@ int main
     {
         fprintf(stderr, "Usage: %s <pin> (<tries>)\n", argv[0]);
         fprintf(stderr, "Description:\n\tPin is the wiringPi pin number (default 7 (GPIO 4)).\n");
-        fprintf(stderr, "\tTries is the number of times to try to obtain a read (default 100) [Optional]");
+        fprintf(stderr, "\tTries is the number of times to try to obtain a read (default %d) [Optional]", tries);
     }
     else
     {
         dht_pin = atoi(argv[1]);
-        fprintf(stderr, "Setting sensor pin to %d\n", dht_pin);
+        printf("Setting sensor pin to %d\n", dht_pin);
     }
 
-    if (argc == 3)
+    if (argc >= 3)
     {
         tries = atoi(argv[2]);
     }
-    fprintf(stderr, "%d attempts will be made.\n", tries);
+    printf("%d attempts will be made.\n", tries);
 
     if (tries < 1)
     {
@@ -387,6 +400,9 @@ int main
     }
 
     SensorValues values = INVALID_VALUES;
+    // Set the thread priority to give a better chance of not losing data due to
+    // thread interruptions
+    set_priority();
     while (tries--)
     {
         if (read_dht22_data(dht_pin, &values, last_stored) == RESULT_ALL_ZERO)
@@ -408,13 +424,14 @@ int main
 
         if (RESULT_OK != values.result)
         {
-            delay(1000); // wait 1sec to refresh
+            delay(200); // wait to refresh
         }
     }
 
     if (RESULT_OK == values.result)
     {
-        printf("Humidity = %.2f %% Temperature = %.2f *C \n", values.humidity, values.temperature);
+        printf("Humidity = %.2f %% Temperature = %.2f *C (%.2f *F)\n",
+            values.humidity, values.temperature, C_TO_F(values.temperature));
     }
     else
     {
@@ -423,7 +440,7 @@ int main
 
     set_last_values(dht_pin, values);
 
-    delay(1500);
+    delay(100);
     close_lockfile(lockfd);
 
     return 0;
