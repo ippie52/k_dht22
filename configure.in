@@ -1,5 +1,5 @@
-AC_INIT(lolware_dht, version-0.1)
-AM_INIT_AUTOMAKE(lolware_dht,0.0.1)
+AC_INIT(k_dht, version-0.1)
+AM_INIT_AUTOMAKE(k_dht,0.0.1)
 AM_CONFIG_HEADER(config.h)
 AM_SILENT_RULES([yes])
 
@@ -9,15 +9,15 @@ AC_PROG_CC
 AC_PROG_MAKE_SET
 
 AC_ARG_ENABLE(development, [ --enable-development enable developer features [default=no]],
-       [CFLAGS="-Wall -O0 -g" ])
+       [CFLAGS="-Wall -O2 -pedantic" ])
 
 AC_ARG_ENABLE(secure, [ --enable-secure turn on security features [default=yes]])
-	
+
 AS_IF([test "x$enable_secure" != "xno"], [
 	if test "x$enable_development" = "xyes" ; then
 	AC_MSG_WARN("Developer on: Turning off secure")
 	else
-	CFLAGS="-Wall -fstack-protector -D_FORTIFY_SOURCE=2 -O2"
+	CFLAGS="-Wall -fstack-protector -pedantic -D_FORTIFY_SOURCE=2 -O2"
 	fi
 ])
 
