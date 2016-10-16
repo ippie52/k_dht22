@@ -1,0 +1,9 @@
+# Object files
+*.o
+
+# Build files
+Makefile
+loldht
+
+# Directories
+.deps/
