@@ -50,7 +50,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = loldht$(EXEEXT)
+bin_PROGRAMS = kdht$(EXEEXT)
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(noinst_HEADERS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
@@ -68,9 +68,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_loldht_OBJECTS = dht22.$(OBJEXT) locking.$(OBJEXT)
-loldht_OBJECTS = $(am_loldht_OBJECTS)
-loldht_LDADD = $(LDADD)
+am_kdht_OBJECTS = dht22.$(OBJEXT) locking.$(OBJEXT)
+kdht_OBJECTS = $(am_kdht_OBJECTS)
+kdht_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -91,8 +91,8 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(loldht_SOURCES)
-DIST_SOURCES = $(loldht_SOURCES)
+SOURCES = $(kdht_SOURCES)
+DIST_SOURCES = $(kdht_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -203,9 +203,9 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-loldht_SOURCES = dht22.c locking.c
+kdht_SOURCES = dht22.c locking.c
 AUTOMAKE_OPTIONS = foreign
-noinst_HEADERS = 
+noinst_HEADERS =
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -253,7 +253,7 @@ config.h: stamp-h1
 stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status config.h
-$(srcdir)/config.h.in:  $(am__configure_deps) 
+$(srcdir)/config.h.in:  $(am__configure_deps)
 	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
 	rm -f stamp-h1
 	touch $@
@@ -300,9 +300,9 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-loldht$(EXEEXT): $(loldht_OBJECTS) $(loldht_DEPENDENCIES) $(EXTRA_loldht_DEPENDENCIES) 
-	@rm -f loldht$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(loldht_OBJECTS) $(loldht_LDADD) $(LIBS)
+kdht$(EXEEXT): $(kdht_OBJECTS) $(kdht_DEPENDENCIES) $(EXTRA_kdht_DEPENDENCIES)
+	@rm -f kdht$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(kdht_OBJECTS) $(kdht_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)

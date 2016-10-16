@@ -1,13 +1,14 @@
-//------------------------------------------------------------------------------
-/// \file   dht22.c
-/// \brief  Application to read and sanity check the output form the DHT21/22.
-///
-/// This is based on the loldht application provided by the repository found at
-/// https://github.com/technion/lol_dht22, previously amended by
-/// technion@lolware.net, and finally updated by Kris Dunning: ippie52@gmail.com
-//------------------------------------------------------------------------------
-//                            Kris Dunning 2016
-//------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
+ *! \file   dht22.c
+ *! \brief  Application to read and sanity check the output form the DHT21/22.
+ *
+ *  This is based on the loldht application provided by the repository found at
+ *  https://github.com/technion/lol_dht22, previously amended by
+ *  technion@lolware.net, and finally updated by Kris Dunning: ippie52@gmail.com
+ *------------------------------------------------------------------------------
+ *                   Kris Dunning ippie52@gmail.com 2016.
+ * -----------------------------------------------------------------------------
+ */
 
 #include <wiringPi.h>
 #include <stdio.h>
@@ -20,33 +21,34 @@
 
 #include "locking.h"
 
+#define VERSION             "0.1"
+#define MAX_PATH_LENGTH     100U
+#define MAX_READING_LENGTH  20U
+
 static const float MAX_HUMIDITY = 99.9f;
-static const int MAX_PATH_LENGTH = 100;
-static const int MAX_READING_LENGTH = 20;
 static const int DEFAULT_PIN = 7;
 static const int MAX_TIMINGS = 85;
 
-// -----------------------------------------------------------------------------
-// The result enumeration of the sensor readings
-// -----------------------------------------------------------------------------
+/******************************************************************************/
+/**The result enumeration of the sensor readings
+ */
 typedef enum Results
 {
-    RESULT_OK,          /* Valid values appear to have been found   */
-    RESULT_BAD_DATA,    /* Bad data                                 */
-    RESULT_ALL_ZERO,    /* All values are zero - suspicious         */
-    RESULT_INCONSISTENT,/* Data inconsistent from last reading      */
-    RESULT_INVALID,     /* Data appears to be invalid               */
+    RESULT_OK,          /*!< Valid values appear to have been found   */
+    RESULT_BAD_DATA,    /*!< Bad data                                 */
+    RESULT_ALL_ZERO,    /*!< All values are zero - suspicious         */
+    RESULT_INCONSISTENT,/*!< Data inconsistent from last reading      */
+    RESULT_INVALID      /*!< Data appears to be invalid               */
 } SensorReadingResults;
 
-/*******************************************************************************
- *  \brief  Sensor value struct, storing temperature, humidity and the
- *          processing result
+/******************************************************************************/
+/** Sensor value struct, storing temperature, humidity and the processing result
  */
 typedef struct Values
 {
-    SensorReadingResults result;    ///< The sensor reading results
-    float humidity;                 ///< The humidity reading (in %)
-    float temperature;              ///< The temperature reading (in *C)
+    SensorReadingResults result;    /*!< The sensor reading results         */
+    float humidity;                 /*!< The humidity reading (in %)        */
+    float temperature;              /*!< The temperature reading (in *C)    */
 
 } SensorValues;
 
@@ -60,7 +62,7 @@ typedef struct Values
  */
 static int evaluate
 (
-    const SensorValues * const values   ///<IN - The SensorValues to evaluate
+    const SensorValues * const values   /*!< The SensorValues to evaluate   */
 )
 {
     if (MAX_HUMIDITY < values->humidity)
@@ -86,32 +88,36 @@ static int evaluate
  */
 static int evaluate_last
 (
-    const SensorValues last_stored, ///<IN - The last SensorValues stored on file
-    SensorValues *values,           ///<IN/OUT - The SensorValues to evaluate
-    SensorValues *last_read         ///<OUT - The last read values for comparison
+    const SensorValues last_stored, /*!<IN - The last SensorValues stored on file   */
+    SensorValues *values,           /*!<IN/OUT - The SensorValues to evaluate       */
+    SensorValues *last_read         /*!<OUT - The last read values for comparison   */
 )
 {
     values->result = evaluate(values);
     if (RESULT_OK == values->result && RESULT_OK == last_stored.result)
     {
-        // First, let's check whether its similar enough
+        /* First, let's check whether its similar enough */
         if (abs(last_stored.temperature - values->temperature) > 5.0f ||
             abs(last_stored.humidity - values->humidity) > 5.0f)
         {
-            // Now, let's check to see whether we have a previous reading, and if so, whether
-            // the temperature or humidity has genuinely changed this much
+            /* Now, let's check to see whether we have a previous reading,
+             * and if so, whether the temperature or humidity has genuinely changed
+             * this much
+             */
             if (RESULT_INCONSISTENT == last_read->result &&
                 abs(last_read->temperature - values->temperature) < 5.0f &&
                 abs(last_read->humidity - values->humidity) < 5.0f)
             {
-                fprintf(stderr, "Last two read values appear to match, ignoring saved inconsistency");
-                // We can assume the value(s) have actually changed this much
+                fprintf(stderr, "Last two read values appear to match, ignoring saved inconsistency\n");
+                /* We can assume the value(s) have actually changed this much */
                 values->result = RESULT_OK;
             }
             else
             {
                 fprintf(stderr, "Last value seems inconsistent, reading again\n");
-                // Either the value doesn't match up, keep trying, or this is the first check
+                /* Either the value doesn't match up, keep trying, or this is
+                 * the first check
+                 */
                 values->result = RESULT_INCONSISTENT;
             }
         }
@@ -128,7 +134,7 @@ static int evaluate_last
  */
 static uint8_t sizecvt
 (
-    const int read ///<IN - The value to sanitise
+    const int read /*!< - The value to sanitise */
 )
 {
     /* digitalRead() and friends from wiringPi are defined as returning a value
@@ -148,8 +154,8 @@ static uint8_t sizecvt
  */
 static FILE *get_sensor_file_descriptor
 (
-    const int sensor_pin,   ///<IN - The sensor pin ID used to identify the file
-    const char *open_mode   ///<IN - The file open mode, i.e. "r+"
+    const int sensor_pin,   /*!< - The sensor pin ID used to identify the file  */
+    const char *open_mode   /*!< - The file open mode, i.e. "r+"                */
 )
 {
     char filename[MAX_PATH_LENGTH];
@@ -170,21 +176,21 @@ static FILE *get_sensor_file_descriptor
  */
 static SensorValues get_last_values
 (
-    const int sensor_pin    ///<IN - The sensor pin to check
+    const int sensor_pin    /*!< - The sensor pin to check  */
 )
 {
     SensorValues values = INVALID_VALUES;
     char contents[MAX_READING_LENGTH];
     size_t size = 0L;
+    int read_pin = 0;
+    int read_temp = 0;
+    int read_hum = 0;
     FILE *fp = get_sensor_file_descriptor(sensor_pin, "r");
     if (fp)
     {
         fseek(fp, 0L, SEEK_END);
         size = ftell(fp);
         rewind(fp);
-        int read_pin;
-        int read_temp;
-        int read_hum;
         if (size < MAX_READING_LENGTH)
         {
             if (fread(contents, size, 1, fp) <= size)
@@ -218,8 +224,8 @@ static SensorValues get_last_values
  */
 static int set_last_values
 (
-    const int sensor_pin,       ///<IN - The sensor pin to store
-    const SensorValues values   ///<IN - The sensor value readings to store
+    const int sensor_pin,       /*!< - The sensor pin to store              */
+    const SensorValues values   /*!< - The sensor value readings to store   */
 )
 {
     int result = 0;
@@ -246,9 +252,11 @@ static int set_last_values
  */
 static void set_priority()
 {
-    struct sched_param params = { sched_get_priority_max(SCHED_FIFO) };
-    // PID set to zero implies this thread, FIFO is the best chance at having a
-    // "real-time" priority, and the maximum priority is identified.
+    struct sched_param params;
+    params.sched_priority  = sched_get_priority_max(SCHED_FIFO);
+    /* PID set to zero implies this thread, FIFO is the best chance at having a
+     * "real-time" priority, and the maximum priority is identified.
+     */
     sched_setscheduler(0, SCHED_FIFO, &params);
 }
 
@@ -258,9 +266,9 @@ static void set_priority()
  */
 static SensorReadingResults read_dht22_data
 (
-    const int sensor_pin,           ///<IN - The sensor pin to read
-    SensorValues *values,           ///<OUT - The values to set
-    const SensorValues last_stored  ///<IN - The last stored values
+    const int sensor_pin,           /*!< - The sensor pin to read   */
+    SensorValues *values,           /*!<OUT - The values to set     */
+    const SensorValues last_stored  /*!< - The last stored values   */
 )
 {
     uint8_t laststate = HIGH;
@@ -271,19 +279,19 @@ static SensorReadingResults read_dht22_data
     static SensorValues last_read = INVALID_VALUES;
 
     memset(dht22_data, 0, sizeof(dht22_data));
-    // Pull pin down for 18 milliseconds
+    /* Pull pin down for 18 milliseconds */
     pinMode(sensor_pin, OUTPUT);
     digitalWrite(sensor_pin, HIGH);
     delayMicroseconds(10000);
     digitalWrite(sensor_pin, LOW);
     delayMicroseconds(18000);
-    // Then pull it up for 40 microseconds
+    /* Then pull it up for 40 microseconds */
     digitalWrite(sensor_pin, HIGH);
     delayMicroseconds(40);
-    // Prepare to read the pin
+    /* Prepare to read the pin */
     pinMode(sensor_pin, INPUT);
 
-    // Detect change and read data
+    /* Detect change and read data */
     for (i = 0; i < MAX_TIMINGS; ++i)
     {
         counter = 0;
@@ -303,10 +311,10 @@ static SensorReadingResults read_dht22_data
             break;
         }
 
-        // Ignore the first 3 transitions
+        /* Ignore the first 3 transitions */
         if ((i >= 4) && ((i % 2) == 0))
         {
-            // Shove each bit into the storage bytes
+            /* Shove each bit into the storage bytes */
             dht22_data[j/8] <<= 1;
             if (counter > 16)
             {
@@ -316,7 +324,7 @@ static SensorReadingResults read_dht22_data
         }
     }
 
-    // Check we read 40 bits (8bit x 5 ) + verify checksum in the last byte
+    /* Check we read 40 bits (8bit x 5 ) + verify checksum in the last byte */
     data_sum = (dht22_data[0] + dht22_data[1] + dht22_data[2] + dht22_data[3]);
     if ((j >= 40) && (dht22_data[4] == (uint8_t)(data_sum & 0xFF)))
     {
@@ -344,8 +352,8 @@ static SensorReadingResults read_dht22_data
  */
 int main
 (
-    int argc,       ///<IN - The number of arguments
-    char *argv[]    ///<IN - The collection of argument strings
+    int argc,       /*!< - The number of arguments              */
+    char *argv[]    /*!< - The collection of argument strings   */
 )
 {
     int lockfd;
@@ -353,17 +361,20 @@ int main
     int zero_count = 0;
     int tries = 100;
     char buffer[MAX_PATH_LENGTH];
+    SensorValues values = INVALID_VALUES;
+    SensorValues last_stored;
 
     if (argc < 2)
     {
-        fprintf(stderr, "Usage: %s <pin> (<tries>)\n", argv[0]);
+        fprintf(stderr, "kdht version %s\n\n", VERSION);
+        fprintf(stderr, "Usage: %s <pin> [<tries>]\n\n", argv[0]);
         fprintf(stderr, "Description:\n\tPin is the wiringPi pin number (default 7 (GPIO 4)).\n");
-        fprintf(stderr, "\tTries is the number of times to try to obtain a read (default %d) [Optional]", tries);
+        fprintf(stderr, "\tTries is the number of times to try to obtain a read (default %d) [Optional]\n", tries);
     }
     else
     {
         dht_pin = atoi(argv[1]);
-        printf("Setting sensor pin to %d\n", dht_pin);
+        printf("Reading DHT21/22 sensor on GPIO %d\n", dht_pin);
     }
 
     if (argc >= 3)
@@ -393,15 +404,15 @@ int main
         exit(EXIT_FAILURE);
     }
 
-    SensorValues last_stored = get_last_values(dht_pin);
+    last_stored = get_last_values(dht_pin);
     if (RESULT_OK != last_stored.result)
     {
         fprintf(stderr, "Stored results were not OK, ignoring them.\n");
     }
 
-    SensorValues values = INVALID_VALUES;
-    // Set the thread priority to give a better chance of not losing data due to
-    // thread interruptions
+    /* Set the thread priority to give a better chance of not losing data due to
+     * thread interruptions
+     */
     set_priority();
     while (tries--)
     {
@@ -424,7 +435,8 @@ int main
 
         if (RESULT_OK != values.result)
         {
-            delay(200); // wait to refresh
+            /* Wait to refresh */
+            delay(200);
         }
     }
 

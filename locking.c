@@ -1,13 +1,14 @@
-//------------------------------------------------------------------------------
-/// \file   locking.c
-/// \brief  Prevents multiple access to the same index by creating a locking
-///         file, which is removed upon successful exit.
-///
-/// This was originally obtained from https://github.com/technion/lol_dht22, by
-/// technion@lolware.net
-//------------------------------------------------------------------------------
-//                            Kris Dunning 2016
-//------------------------------------------------------------------------------
+/*------------------------------------------------------------------------------
+ *! \file   locking.c
+ *! \brief  Prevents multiple access to the same index by creating a locking
+ *          file, which is removed upon successful exit.
+ *
+ *  This was originally obtained from https://github.com/technion/lol_dht22, by
+ *  technion@lolware.net
+ *------------------------------------------------------------------------------
+ *                   Kris Dunning ippie52@gmail.com 2016.
+ *------------------------------------------------------------------------------
+ */
 
 #include <sys/file.h>
 #include <fcntl.h>
@@ -26,9 +27,9 @@
  */
 int get_lockfile_name
 (
-   const int sensor,  ///<IN  - The sensor ID
-   char *buffer,      ///<OUT - The string buffer to write to
-   const int size     ///<IN  - The maximum length of the string
+   const int sensor,  /*!<IN  - The sensor ID                     */
+   char *buffer,      /*!<OUT - The string buffer to write to     */
+   const int size     /*!<IN  - The maximum length of the string  */
 )
 {
     return snprintf(buffer, size, "/var/run/dht%d.lock", sensor);
@@ -41,7 +42,7 @@ int get_lockfile_name
  */
 int open_lockfile
 (
-   const char *filename    ///<IN - The file name of the lock file to create
+   const char *filename    /*!<IN - The file name of the lock file to create  */
 )
 {
    int fd;
@@ -61,8 +62,7 @@ int open_lockfile
          printf("Lock file is in use, exiting...\n");
          /* If the lock file is in use, we COULD sleep and try again.
           * However, a lock file would more likely indicate an already runaway
-	      * process.
-         */
+	       * process. */
 	     exit(EXIT_FAILURE);
       }
       perror("Flock failed");
@@ -76,7 +76,7 @@ int open_lockfile
  */
 void close_lockfile
 (
-   const int fd   ///<IN - The file descriptor of the lock file to close
+   const int fd   /*!<IN - The file descriptor of the lock file to close   */
 )
 {
    if(flock(fd, LOCK_UN) == -1)
