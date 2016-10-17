@@ -1,6 +1,7 @@
 # Repository information
 
-Driver for DHT22/AM2302 Temperature and humidity sensors on Raspberry Pi.
+This repository contains a modified driver for the DHT22 / AM2302 temperature and humidity sensors on Raspberry Pi.
+
 Based on dht11.c: http://ubuntuone.com/6mT9cTREz90BUfvQD1AGNy (license unknown).
 Forked from the repository https://github.com/technion/lol_dht22.git
 Requires wiringPi library.
@@ -16,6 +17,12 @@ reliable and faster reading with fewer delays.
 Due to file locking and other aspects, super user access is required.
 
 `sudo kdht`
+
+# Features
+* Output temperature displayed in both Celsius and Fahrenheit.
+* Faster read time than previous revisions.
+* Identifies some invalid readings - out of range values ignored and confirmation when inconsistent values read.
+* Lock files no longer prevent simultaneous reads to different pins.
 
 # Example output
 `sudo ./kdht 28 10
