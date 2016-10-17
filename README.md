@@ -10,8 +10,10 @@ This version was created to make slight improvements which allow for a more
 reliable and faster reading with fewer delays.
 
 # Building
-`./configure`
-`sudo make install`
+```
+./configure
+sudo make install
+```
 
 # Running
 Due to file locking and other aspects, super user access is required.
@@ -25,10 +27,12 @@ Due to file locking and other aspects, super user access is required.
 * Lock files no longer prevent simultaneous reads to different pins.
 
 # Example output
-`sudo ./kdht 28 10`
-`Reading DHT21/22 sensor on GPIO 28`
-`10 attempts will be made.`
-`Humidity = 62.10 % Temperature = 23.80 *C (74.84 *F)`
+```
+sudo ./kdht 28 10
+Reading DHT21/22 sensor on GPIO 28
+10 attempts will be made.
+Humidity = 62.10 % Temperature = 23.80 *C (74.84 *F)
+```
 
 # Licence
 As with previous licence: Public domain. Do what you want. No warranties.
