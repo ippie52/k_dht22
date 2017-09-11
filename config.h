@@ -35,25 +35,25 @@
 #define PACKAGE "k_dht"
 
 /* Define to the address where bug reports for this package should be sent. */
-#define PACKAGE_BUGREPORT ""
+#define PACKAGE_BUGREPORT "kdht22@gmail.com"
 
 /* Define to the full name of this package. */
 #define PACKAGE_NAME "k_dht"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "k_dht version-0.1"
+#define PACKAGE_STRING "k_dht 1.0"
 
 /* Define to the one symbol short name of this package. */
-#define PACKAGE_TARNAME "k_dht"
+#define PACKAGE_TARNAME "kdht"
 
 /* Define to the home page for this package. */
-#define PACKAGE_URL ""
+#define PACKAGE_URL "https://github.com/ippie52/k_dht22"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "version-0.1"
+#define PACKAGE_VERSION "1.0"
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.0.1"
+#define VERSION "1.0"

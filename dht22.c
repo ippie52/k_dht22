@@ -20,8 +20,8 @@
 #include <sched.h>
 
 #include "locking.h"
+#include "config.h"
 
-#define VERSION             "0.1"
 #define MAX_PATH_LENGTH     100U
 #define MAX_READING_LENGTH  20U
 

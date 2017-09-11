@@ -52,7 +52,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS = kdht$(EXEEXT)
 subdir = .
-DIST_COMMON = README $(am__configure_deps) $(noinst_HEADERS) \
+DIST_COMMON = $(am__configure_deps) $(noinst_HEADERS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/config.h.in $(top_srcdir)/configure depcomp \
 	install-sh missing
@@ -205,7 +205,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 kdht_SOURCES = dht22.c locking.c
 AUTOMAKE_OPTIONS = foreign
-noinst_HEADERS =
+noinst_HEADERS = 
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -253,7 +253,7 @@ config.h: stamp-h1
 stamp-h1: $(srcdir)/config.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status config.h
-$(srcdir)/config.h.in:  $(am__configure_deps)
+$(srcdir)/config.h.in:  $(am__configure_deps) 
 	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
 	rm -f stamp-h1
 	touch $@
@@ -300,7 +300,7 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-kdht$(EXEEXT): $(kdht_OBJECTS) $(kdht_DEPENDENCIES) $(EXTRA_kdht_DEPENDENCIES)
+kdht$(EXEEXT): $(kdht_OBJECTS) $(kdht_DEPENDENCIES) $(EXTRA_kdht_DEPENDENCIES) 
 	@rm -f kdht$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(kdht_OBJECTS) $(kdht_LDADD) $(LIBS)
 
@@ -673,8 +673,8 @@ distclean-local:
 	rm -rf autom4te.cache .deps Makefile.in configure
 
 splint:
-	splint dht22.c -warnposix -I/usr/local/include  -I/usr/include/arm-linux-gnueabihf -shiftimplementation
-	splint locking.c -warnposix -I/usr/local/include  -I/usr/include/arm-linux-gnueabihf -unrecog
+	splint dht22.c -warnposix -pedantic -I/usr/local/include  -I/usr/include/arm-linux-gnueabihf -shiftimplementation
+	splint locking.c -warnposix -pedantic -I/usr/local/include  -I/usr/include/arm-linux-gnueabihf -unrecog
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

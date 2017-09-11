@@ -1,5 +1,5 @@
 bin_PROGRAMS = kdht
-loldht_SOURCES = dht22.c locking.c
+kdht_SOURCES = dht22.c locking.c
 AUTOMAKE_OPTIONS = foreign
 
 noinst_HEADERS =
